@@ -1,0 +1,139 @@
+<?php
+
+namespace Schemastud\JsonNs\Laravel;
+
+use Rushing\Popcorn\Binding;
+use Rushing\Popcorn\Contracts\Invocable;
+use Rushing\Popcorn\InvocableRegistry;
+use Schemastud\JsonNs\NamespaceUri;
+
+/**
+ * The public binding API for the URI-keyed dispatch socket (asset 06). A host uses it to:
+ *
+ *   1. BIND a namespace URI to its own handler — {@see bind()} wraps a plain callback as a
+ *      popcorn {@see NamespaceHandler} (whose `name()` = the URI) and registers it into the
+ *      shared {@see InvocableRegistry}. No new port; the namespace layer is the registry's
+ *      third consumer (asset 06 §3).
+ *
+ *   2. DISPATCH a resolved namespace URI to whatever handler is bound to it — {@see dispatch()}
+ *      applies **pick-one by URI** with the **no-op-after-validation** fallback (§7).
+ *
+ * Resolution semantics (asset 06 §7 + asset 05 §8):
+ *
+ *   - **Pick-one, pinned > stem.** For a resolved URI, an exact match wins. If the URI is
+ *     *pinned* (`.../grounding/2`) and no handler is registered under that exact pin, dispatch
+ *     falls back to a handler registered on the version-free *stem* (`.../grounding`) — the pin
+ *     out-specifies the stem, but the stem-bound handler fires across all versions. If the URI
+ *     is *unpinned* (a stem), only an exact stem match counts (a stem must not silently pick an
+ *     arbitrary pinned version).
+ *
+ *   - **Missing handler = no-op AFTER validation.** When no handler is bound to the URI (nor to
+ *     its stem), dispatch is a no-op — it returns the node's value unchanged wrapped as
+ *     `['value' => <value>]`, NOT an error. Validation already happened upstream (php-json-ns);
+ *     dispatch simply has nothing to do. This is what makes validation-only free (§7.2).
+ *
+ *   - **Last-registered-wins on rebind** — inherited from popcorn's name-keyed `register()`.
+ *
+ * URI-is-identity (asset 05 §5) means a CURIE key and an `@namespaced` object that resolve to
+ * the SAME URI hit the SAME registration — the host resolves both to a URI via the framework-free
+ * `Schemastud\JsonNs\Resolver`, then dispatches here.
+ */
+class NamespaceDispatcher
+{
+    private InvocableRegistry $registry;
+
+    public function __construct(InvocableRegistry $registry)
+    {
+        $this->registry = $registry;
+    }
+
+    /**
+     * Bind a namespace URI to a host handler. The callback receives the standard envelope
+     * (§6, {@see Envelope}) and returns an array. Rebinding the same URI replaces the prior
+     * handler (popcorn `register` is name-keyed).
+     *
+     * @param  string|NamespaceUri  $uri  the namespace URI to bind (stem to fire across all
+     *                                    versions, pinned to fire only for that version)
+     * @param  callable(array<string, mixed>): array<string, mixed>  $handle  the host plug
+     */
+    public function bind(string|NamespaceUri $uri, callable $handle, Binding $binding = Binding::Local): static
+    {
+        $this->registry->register(new NamespaceHandler((string) $uri, $handle, $binding));
+
+        return $this;
+    }
+
+    /** Register a pre-built {@see Invocable} whose `name()` is already a namespace URI. */
+    public function register(Invocable $handler): static
+    {
+        $this->registry->register($handler);
+
+        return $this;
+    }
+
+    /** True when SOME handler would fire for this URI (exact, or a stem fallback for a pin). */
+    public function bound(string|NamespaceUri $uri): bool
+    {
+        return $this->resolveName(NamespaceUri::from((string) $uri)) !== null;
+    }
+
+    /**
+     * Dispatch a resolved namespace URI with an already-built envelope. Applies pick-one
+     * (pinned > stem) then the no-op-after-validation fallback.
+     *
+     * @return array<string, mixed>
+     */
+    public function dispatchEnvelope(Envelope $envelope): array
+    {
+        return $this->dispatch($envelope->namespace(), $envelope->toArray());
+    }
+
+    /**
+     * Dispatch a resolved namespace URI with the raw `{value, pointer, namespace, context}`
+     * input. Prefer {@see dispatchEnvelope()} for the typed builder.
+     *
+     * @param  array{value?: mixed, pointer?: string, namespace?: string, context?: array<string, mixed>}  $input
+     * @return array<string, mixed>
+     */
+    public function dispatch(string|NamespaceUri $uri, array $input): array
+    {
+        $requested = NamespaceUri::from((string) $uri);
+
+        $name = $this->resolveName($requested);
+
+        // Missing handler = no-op after validation ("OR NOT", §7.2): leave the node untouched.
+        if ($name === null) {
+            return ['value' => $input['value'] ?? null];
+        }
+
+        return $this->registry->invoke($name, $input);
+    }
+
+    /**
+     * Pick the registered name that answers a resolved URI, or null when none does.
+     *
+     * Pick-one by URI, pinned > stem (asset 05 §8, asset 06 §7.1):
+     *   - an EXACT registration on the requested URI always wins;
+     *   - failing that, if the requested URI is PINNED, a registration on its version-free
+     *     STEM answers it (the stem-bound handler fires across all versions);
+     *   - a requested STEM only ever matches an exact stem registration.
+     */
+    private function resolveName(NamespaceUri $requested): ?string
+    {
+        $exact = (string) $requested;
+
+        if ($this->registry->has($exact)) {
+            return $exact;
+        }
+
+        if ($requested->isPinned()) {
+            $stem = $requested->stem();
+
+            if ($this->registry->has($stem)) {
+                return $stem;
+            }
+        }
+
+        return null;
+    }
+}
