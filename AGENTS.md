@@ -1,4 +1,4 @@
-> You are in **rushing/laravel-json-ns** — the Laravel binding for the `@namespace` grammar.
+> You are in **schemastud/laravel-json-ns** — the Laravel binding for the `@namespace` grammar.
 
 A URI-keyed dispatch socket over `schemastud/php-json-ns` + `rushing/php-popcorn`: bind your own
 namespace URI to your own handler (registered as a popcorn `Invocable`), with

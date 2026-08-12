@@ -11,7 +11,7 @@
         "invocable"
     ],
     "type": "library",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Stephen Rushing",
