@@ -1,6 +1,6 @@
 {
     "name": "schemastud/laravel-json-ns",
-    "description": "The Laravel binding for the @namespace grammar \u2014 a URI-keyed dispatch socket over schemastud/php-json-ns + rushing/php-popcorn: bind your own namespace URI to your own handler (registered as a popcorn Invocable), with pick-one-by-URI (pinned > stem) resolution and a no-op-after-validation fallback.",
+    "description": "The Laravel binding for the @namespace grammar — a URI-keyed dispatch socket over schemastud/php-json-ns + rushing/php-popcorn: bind your own namespace URI to your own handler (registered as a popcorn Invocable), with pick-one-by-URI (pinned > stem) resolution and a no-op-after-validation fallback.",
     "keywords": [
         "laravel",
         "json",
@@ -29,7 +29,9 @@
     "require-dev": {
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^10.0|^11.0",
-        "pestphp/pest": "^3.0"
+        "pestphp/pest": "^3.0",
+        "schemastud/laravel-data-schemas": "*",
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -52,12 +54,18 @@
                 "schemastud/php-json-ns",
                 "rushing/php-popcorn"
             ],
-            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped \u2014 the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 \u00a78)."
+            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped — the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 §8)."
+        },
+        "merge-plugin": {
+            "include": [
+                "composer.local.json"
+            ]
         }
     },
     "config": {
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "wikimedia/composer-merge-plugin": true
         },
         "sort-packages": true
     },
