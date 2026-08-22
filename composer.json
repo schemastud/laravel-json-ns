@@ -74,5 +74,19 @@
     "scripts": {
         "pint": "@php -d memory_limit=512M vendor/bin/pint",
         "test": "@php vendor/bin/pest"
-    }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/stephenr85/php-popcorn.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/schemastud/laravel-data-schemas.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/schemastud/php-json-ns.git"
+        }
+    ]
 }
