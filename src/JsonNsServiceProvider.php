@@ -2,7 +2,7 @@
 
 namespace Schemastud\JsonNs\Laravel;
 
-use Rushing\Popcorn\InvocableRegistry;
+use Rushing\Popcorn\Registries\RegistryIndex;
 use Schemastud\DataSchemas\Contracts\EnumeratesVersions;
 use Schemastud\DataSchemas\Contracts\SchemaRegistry;
 use Schemastud\JsonNs\NamespaceUri;
@@ -14,7 +14,7 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 /**
  * The Laravel binding (asset 06 §8): where the popcorn coupling rides. It exposes the
  * URI-keyed dispatch socket — a {@see NamespaceDispatcher} over the shared
- * {@see InvocableRegistry} — so a host can bind its own namespace URI to its own handler.
+ * {@see NamespaceRegistry} — so a host can bind its own namespace URI to its own handler.
  *
  * The framework-free grammar (`schemastud/php-json-ns`) stays pure; nothing here leaks into
  * it. This provider wires the dispatch tier AND (JN-16 / ADR-0192 §6) hosts the validation
@@ -33,12 +33,14 @@ class JsonNsServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        // Share the popcorn registry so the namespace layer registers alongside the
-        // grounding-kernel / composition-engine consumers into ONE InvocableRegistry.
-        $this->app->singleton(InvocableRegistry::class);
+        // json-ns owns its own branch of the keyspace rather than sharing the estate pool. The
+        // sharing was deliberate once — it let the namespace layer register "alongside the
+        // grounding-kernel / composition-engine consumers" — and that is exactly what ticket 40
+        // unwinds: three packages' capabilities in one keyspace, told apart only by name.
+        $this->app->singleton(NamespaceRegistry::class);
 
         $this->app->singleton(NamespaceDispatcher::class, function ($app): NamespaceDispatcher {
-            return new NamespaceDispatcher($app->make(InvocableRegistry::class));
+            return new NamespaceDispatcher($app->make(NamespaceRegistry::class));
         });
 
         // The vocabulary store port finally gets its host (JN-16): backed by the beam-style
@@ -81,5 +83,15 @@ class JsonNsServiceProvider extends PackageServiceProvider
         $this->app->bind(VocabularyValidator::class, function ($app): VocabularyValidator {
             return new VocabularyValidator($app->make(VocabularyRegistry::class));
         });
+    }
+
+    public function packageBooted(): void
+    {
+        // An owner registers DOWN into the index from its own boot; the index never reaches up.
+        // Only the REGISTRY is addressable this way — its entries carry foreign URI keys and are
+        // outside the global keyspace by construction (ticket 20 D3).
+        $this->app->make(RegistryIndex::class)->describe(
+            $this->app->make(NamespaceRegistry::class),
+        );
     }
 }

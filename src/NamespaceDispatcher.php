@@ -4,16 +4,15 @@ namespace Schemastud\JsonNs\Laravel;
 
 use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
-use Rushing\Popcorn\InvocableRegistry;
 use Schemastud\JsonNs\NamespaceUri;
 
 /**
  * The public binding API for the URI-keyed dispatch socket (asset 06). A host uses it to:
  *
  *   1. BIND a namespace URI to its own handler — {@see bind()} wraps a plain callback as a
- *      popcorn {@see NamespaceHandler} (whose `name()` = the URI) and registers it into the
- *      shared {@see InvocableRegistry}. No new port; the namespace layer is the registry's
- *      third consumer (asset 06 §3).
+ *      popcorn {@see NamespaceHandler} (whose `name()` = the URI) and registers it into
+ *      {@see NamespaceRegistry}, json-ns's own branch of the keyspace. No new port; the
+ *      namespace layer is the registry seam's third consumer (asset 06 §3).
  *
  *   2. DISPATCH a resolved namespace URI to whatever handler is bound to it — {@see dispatch()}
  *      applies **pick-one by URI** with the **no-op-after-validation** fallback (§7).
@@ -40,9 +39,9 @@ use Schemastud\JsonNs\NamespaceUri;
  */
 class NamespaceDispatcher
 {
-    private InvocableRegistry $registry;
+    private NamespaceRegistry $registry;
 
-    public function __construct(InvocableRegistry $registry)
+    public function __construct(NamespaceRegistry $registry)
     {
         $this->registry = $registry;
     }

@@ -1,8 +1,8 @@
 <?php
 
-use Rushing\Popcorn\InvocableRegistry;
 use Schemastud\JsonNs\Laravel\Envelope;
 use Schemastud\JsonNs\Laravel\NamespaceDispatcher;
+use Schemastud\JsonNs\Laravel\NamespaceRegistry;
 use Schemastud\JsonNs\Laravel\Tests\FakeHandler;
 use Schemastud\JsonNs\NamespaceUri;
 use Schemastud\JsonNs\Resolver;
@@ -11,11 +11,11 @@ const STEM = 'https://schemas.splicewire.app/splice/grounding';
 const PINNED = 'https://schemas.splicewire.app/splice/grounding/2';
 
 /**
- * The test seam (asset 06): register a FAKE Invocable by URI into the shared registry, then
- * assert dispatch through the InvocableRegistry::invoke(uri, input) socket.
+ * The test seam (asset 06): register a FAKE Invocable by URI into json-ns's own registry, then
+ * assert dispatch through the URI-keyed socket.
  */
 beforeEach(function () {
-    $this->registry = app(InvocableRegistry::class);
+    $this->registry = app(NamespaceRegistry::class);
     $this->dispatcher = app(NamespaceDispatcher::class);
 });
 
@@ -136,3 +136,21 @@ function envelopeArray(string $uri): array
         'context' => [],
     ];
 }
+
+// (f) the fan-out: json-ns owns `jsonns.namespaces`, and its ENTRIES are deliberately outside the
+// global keyspace because they carry foreign URI keys (registry-kernel ticket 20 D3 / 40).
+it('describes its registry into the index without putting URI keys in the global keyspace', function () {
+    $index = app(Rushing\Popcorn\Registries\RegistryIndex::class);
+
+    expect($index->owner('jsonns.namespaces'))->toBeInstanceOf(NamespaceRegistry::class);
+
+    $this->registry->register(new FakeHandler(PINNED, 'pinned'));
+
+    // Reachable AS a registry...
+    expect($this->registry->has(Schemastud\JsonNs\Laravel\NamespaceUriKey::of(PINNED)))->toBeTrue();
+
+    // ...and not through the index's own keyspace: a URI is not a dotted key, and the kernel never
+    // stamped a root onto it because it cannot construct a consumer's key type.
+    expect($index->routeTo('jsonns.namespaces'))->not->toBeNull()
+        ->and(array_map('strval', $index->keys()))->toContain('jsonns.namespaces');
+});

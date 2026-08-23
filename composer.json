@@ -1,6 +1,6 @@
 {
     "name": "schemastud/laravel-json-ns",
-    "description": "The Laravel binding for the @namespace grammar — a URI-keyed dispatch socket over schemastud/php-json-ns + rushing/php-popcorn: bind your own namespace URI to your own handler (registered as a popcorn Invocable), with pick-one-by-URI (pinned > stem) resolution and a no-op-after-validation fallback.",
+    "description": "The Laravel binding for the @namespace grammar \u2014 a URI-keyed dispatch socket over schemastud/php-json-ns + rushing/php-popcorn: bind your own namespace URI to your own handler (registered as a popcorn Invocable), with pick-one-by-URI (pinned > stem) resolution and a no-op-after-validation fallback.",
     "keywords": [
         "laravel",
         "json",
@@ -22,9 +22,10 @@
         "php": "^8.3",
         "illuminate/contracts": "^11.0|^12.0|^13.0",
         "illuminate/support": "^11.0|^12.0|^13.0",
-        "spatie/laravel-package-tools": "^1.16",
+        "rushing/laravel-popcorn": "*",
+        "rushing/php-popcorn": "*",
         "schemastud/php-json-ns": "*",
-        "rushing/php-popcorn": "*"
+        "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
@@ -54,7 +55,7 @@
                 "schemastud/php-json-ns",
                 "rushing/php-popcorn"
             ],
-            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped — the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 §8)."
+            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped \u2014 the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 \u00a78)."
         },
         "merge-plugin": {
             "include": [
