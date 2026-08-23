@@ -4,13 +4,16 @@ namespace Schemastud\JsonNs\Laravel\Tests;
 
 use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
+use Rushing\Popcorn\Registries\HasRegistryKey;
+use Rushing\Popcorn\Registries\RegistryKey;
+use Schemastud\JsonNs\Laravel\NamespaceUriKey;
 
 /**
  * A test double that records every envelope it was invoked with and echoes it back tagged, so
  * a test can assert (a) WHICH fake fired (pick-one) and (b) that the {value, pointer,
  * namespace, context} envelope passed through unchanged.
  */
-class FakeHandler implements Invocable
+class FakeHandler implements HasRegistryKey, Invocable
 {
     private string $uri;
 
@@ -23,6 +26,12 @@ class FakeHandler implements Invocable
     {
         $this->uri = $uri;
         $this->tag = $tag;
+    }
+
+    /** Keyed by URI, exactly as {@see \Schemastud\JsonNs\Laravel\NamespaceHandler} is. */
+    public function registryKey(): RegistryKey
+    {
+        return NamespaceUriKey::of($this->uri);
     }
 
     public function name(): string

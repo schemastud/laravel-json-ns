@@ -4,6 +4,8 @@ namespace Schemastud\JsonNs\Laravel;
 
 use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
+use Rushing\Popcorn\Registries\HasRegistryKey;
+use Rushing\Popcorn\Registries\RegistryKey;
 
 /**
  * The URI-keyed dispatch socket: a popcorn {@see Invocable} whose {@see name()} IS a bound
@@ -27,7 +29,7 @@ use Rushing\Popcorn\Contracts\Invocable;
  * resolve to the SAME URI bind to the SAME handler — one registration serves both attachment
  * points.
  */
-class NamespaceHandler implements Invocable
+class NamespaceHandler implements HasRegistryKey, Invocable
 {
     private string $uri;
 
@@ -55,7 +57,18 @@ class NamespaceHandler implements Invocable
         return new self($uri, $handle, $binding);
     }
 
-    /** The namespace URI — the popcorn registry key handlers bind by (asset 06 §3). */
+    /**
+     * The URI as this package's own {@see RegistryKey} — the seam that keeps URI-is-identity intact
+     * once the registry is keyed by {@see RegistryKey} rather than by a name string. A registry
+     * consults this in preference to {@see name()} exactly so the URI never has to survive popcorn's
+     * dotted-kebab charset (registry-kernel ticket 30).
+     */
+    public function registryKey(): RegistryKey
+    {
+        return NamespaceUriKey::of($this->uri);
+    }
+
+    /** The namespace URI, rendered. Kept for display and for the `Invocable` contract. */
     public function name(): string
     {
         return $this->uri;

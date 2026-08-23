@@ -74,7 +74,7 @@ class NamespaceDispatcher
     /** True when SOME handler would fire for this URI (exact, or a stem fallback for a pin). */
     public function bound(string|NamespaceUri $uri): bool
     {
-        return $this->resolveName(NamespaceUri::from((string) $uri)) !== null;
+        return $this->handlerFor(NamespaceUri::from((string) $uri)) !== null;
     }
 
     /**
@@ -97,40 +97,51 @@ class NamespaceDispatcher
      */
     public function dispatch(string|NamespaceUri $uri, array $input): array
     {
-        $requested = NamespaceUri::from((string) $uri);
-
-        $name = $this->resolveName($requested);
+        $handler = $this->handlerFor(NamespaceUri::from((string) $uri));
 
         // Missing handler = no-op after validation ("OR NOT", §7.2): leave the node untouched.
-        if ($name === null) {
+        if ($handler === null) {
             return ['value' => $input['value'] ?? null];
         }
 
-        return $this->registry->invoke($name, $input);
+        return $handler->invoke($input);
     }
 
     /**
-     * Pick the registered name that answers a resolved URI, or null when none does.
+     * Pick the handler that answers a resolved URI, or null when none does.
      *
      * Pick-one by URI, pinned > stem (asset 05 §8, asset 06 §7.1):
      *   - an EXACT registration on the requested URI always wins;
      *   - failing that, if the requested URI is PINNED, a registration on its version-free
      *     STEM answers it (the stem-bound handler fires across all versions);
      *   - a requested STEM only ever matches an exact stem registration.
+     *
+     * Addressed by {@see NamespaceUriKey}, never by the rendered URI string: since registry-kernel
+     * ticket 30 the registry is keyed by `RegistryKey`, and popcorn's canonical `Key` would reject a
+     * URI's `:` and `/` outright. Equality is on segments, so the key object is the only thing that
+     * can express "this URI" to the registry — the rendering is for humans.
+     *
+     * **Probed with `has()` rather than `tryResolve()`, and that is load-bearing.** A pin segments as a
+     * CHILD of its stem, so to the kernel a stem request with pins registered under it is a request for
+     * a BRANCH — which `resolve()` reports as ambiguous rather than absent, and `tryResolve()` rethrows
+     * (a question with several answers is not a miss). That is the kernel being right: it cannot know
+     * this package ranks a pin over its stem. `has()` is exact-only, so probing with it expresses §7.1's
+     * "a requested stem only ever matches an exact stem registration" directly, and the ranking stays
+     * where it belongs — here, in the consumer that owns the rule.
      */
-    private function resolveName(NamespaceUri $requested): ?string
+    private function handlerFor(NamespaceUri $requested): ?Invocable
     {
-        $exact = (string) $requested;
+        $exact = NamespaceUriKey::of($requested);
 
         if ($this->registry->has($exact)) {
-            return $exact;
+            return $this->registry->resolve($exact);
         }
 
         if ($requested->isPinned()) {
-            $stem = $requested->stem();
+            $stem = NamespaceUriKey::of($requested->stem());
 
             if ($this->registry->has($stem)) {
-                return $stem;
+                return $this->registry->resolve($stem);
             }
         }
 
