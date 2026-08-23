@@ -16,7 +16,7 @@ use Rushing\Popcorn\Contracts\Invocable;
  *   invoke([
  *     'value'     => <the namespaced node — the CURIE key's value, or the object node>,
  *     'pointer'   => "/config/grounding",   // JSON Pointer to it
- *     'namespace' => "https://schemas.splicewire.app/splice/grounding",  // the matched URI
+ *     'namespace' => "https://app.example.com/schemas/splice/grounding",  // the matched URI
  *     'context'   => [ ... ],               // OPAQUE host-runtime passthrough (profile/tenant/caller)
  *   ]) : array
  *
