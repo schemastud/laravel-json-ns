@@ -127,6 +127,14 @@ class NamespaceDispatcher
      * this package ranks a pin over its stem. `has()` is exact-only, so probing with it expresses §7.1's
      * "a requested stem only ever matches an exact stem registration" directly, and the ranking stays
      * where it belongs — here, in the consumer that owns the rule.
+     *
+     * **Deliberately NOT re-pointed at `Nested::nodeAt()`**, the three-state branch probe this workaround
+     * helped motivate (registry-kernel ticket 46). That verb exists so a caller can tell "a branch lives
+     * here" from "no such key" — and §7.1 is the one rule that does not want to tell them apart. A stem
+     * with pins below it and a stem nobody has ever mentioned are the same answer here: no exact
+     * registration, fall through. `nodeAt($k) === RegistryNode::Entry` would be a longer spelling of
+     * `has($k)`, so the verb landing changes nothing for this dispatcher — which is the check that it
+     * fits, not that it misses.
      */
     private function handlerFor(NamespaceUri $requested): ?Invocable
     {
