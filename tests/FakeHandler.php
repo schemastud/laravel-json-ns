@@ -6,7 +6,7 @@ use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
 use Rushing\Popcorn\Registries\HasRegistryKey;
 use Rushing\Popcorn\Registries\RegistryKey;
-use Schemastud\JsonNs\Laravel\NamespaceUriKey;
+use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
  * A test double that records every envelope it was invoked with and echoes it back tagged, so

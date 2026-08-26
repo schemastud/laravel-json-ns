@@ -8,6 +8,7 @@ use Rushing\Popcorn\Registries\IsRegistry;
 use Rushing\Popcorn\Registries\OnDuplicate;
 use Rushing\Popcorn\Registries\Optionality;
 use Rushing\Popcorn\Registries\RegistryArity;
+use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
  * The URI-keyed namespace handlers — json-ns's own branch, and the estate's one FOREIGN-KEYED

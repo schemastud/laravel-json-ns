@@ -6,6 +6,7 @@ use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
 use Rushing\Popcorn\Registries\HasRegistryKey;
 use Rushing\Popcorn\Registries\RegistryKey;
+use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
  * The URI-keyed dispatch socket: a popcorn {@see Invocable} whose {@see name()} IS a bound

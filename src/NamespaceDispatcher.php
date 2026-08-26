@@ -5,6 +5,7 @@ namespace Schemastud\JsonNs\Laravel;
 use Rushing\Popcorn\Binding;
 use Rushing\Popcorn\Contracts\Invocable;
 use Schemastud\JsonNs\NamespaceUri;
+use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
  * The public binding API for the URI-keyed dispatch socket (asset 06). A host uses it to:

@@ -147,7 +147,7 @@ it('describes its registry into the index without putting URI keys in the global
     $this->registry->register(new FakeHandler(PINNED, 'pinned'));
 
     // Reachable AS a registry...
-    expect($this->registry->has(Schemastud\JsonNs\Laravel\NamespaceUriKey::of(PINNED)))->toBeTrue();
+    expect($this->registry->has(Schemastud\JsonNs\NamespaceUriKey::of(PINNED)))->toBeTrue();
 
     // ...and not through the index's own keyspace: a URI is not a dotted key, and the kernel never
     // stamped a root onto it because it cannot construct a consumer's key type.
