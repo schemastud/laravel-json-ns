@@ -44,6 +44,16 @@ afterEach(function () {
 });
 
 it('binds a standalone in-memory registry when the host has no SchemaRegistry', function () {
+    // This case has to REMOVE the binding rather than assume its absence. It used to open with
+    // `expect(app()->bound(SchemaRegistry::class))->toBeFalse()`, which passed only because the
+    // harness omitted `LaravelDataSchemasServiceProvider` — i.e. it asserted a fact about the
+    // testbench app, not about this package, and it made the un-backed branch the harness DEFAULT
+    // for every other test in the suite. Now the provider is registered (see tests/TestCase.php)
+    // and the no-registry host is staged explicitly: `offsetUnset` drops the binding, the instance
+    // and the resolved flag together, which is the only way to un-bind in the container.
+    unset(app()[SchemaRegistry::class]);
+    app()->forgetInstance(VocabularyRegistry::class);
+
     expect(app()->bound(SchemaRegistry::class))->toBeFalse()
         ->and(app(VocabularyRegistry::class))->toBeInstanceOf(VocabularyRegistry::class)
         ->and(app(VocabularyRegistry::class)->has(NamespaceUri::from(VOCAB_STEM)))->toBeFalse();
