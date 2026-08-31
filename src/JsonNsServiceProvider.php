@@ -2,7 +2,6 @@
 
 namespace Schemastud\JsonNs\Laravel;
 
-use Rushing\Popcorn\Registries\RegistryIndex;
 use Schemastud\DataSchemas\Contracts\EnumeratesVersions;
 use Schemastud\DataSchemas\Contracts\SchemaRegistry;
 use Schemastud\JsonNs\NamespaceUri;
@@ -85,13 +84,5 @@ class JsonNsServiceProvider extends PackageServiceProvider
         });
     }
 
-    public function packageBooted(): void
-    {
-        // An owner registers DOWN into the index from its own boot; the index never reaches up.
-        // Only the REGISTRY is addressable this way — its entries carry foreign URI keys and are
-        // outside the global keyspace by construction (ticket 20 D3).
-        $this->app->make(RegistryIndex::class)->describe(
-            $this->app->make(NamespaceRegistry::class),
-        );
-    }
+    public function packageBooted(): void {}
 }
