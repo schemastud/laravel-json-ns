@@ -7,7 +7,6 @@ use Rushing\Popcorn\InvocableRegistry;
 use Rushing\Popcorn\Registries\IsRegistry;
 use Rushing\Popcorn\Registries\OnDuplicate;
 use Rushing\Popcorn\Registries\Optionality;
-use Rushing\Popcorn\Registries\RegistryArity;
 use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
@@ -36,13 +35,9 @@ use Schemastud\JsonNs\NamespaceUriKey;
  */
 #[IsRegistry(
     root: 'jsonns.namespaces',
-    of: 'namespace handlers, keyed by namespace URI rather than by a dotted key',
-    arity: RegistryArity::PickOne,
     entryType: Invocable::class,
     onDuplicate: OnDuplicate::Supersede,
     optionality: Optionality::Optional,
-    note: 'Rebinding a URI replaces the prior handler — the documented last-registered-wins of the '
-        .'dispatch socket (asset 06 §7), not an accident. Entries carry a foreign RegistryKey, so '
-        .'they are addressable only through this registry, never through the global keyspace.',
+    description: 'namespace handlers, keyed by namespace URI rather than by a dotted key. Rebinding a URI replaces the prior handler — the documented last-registered-wins of the dispatch socket (asset 06 §7), not an accident. Entries carry a foreign RegistryKey, so they are addressable only through this registry, never through the global keyspace.',
 )]
 class NamespaceRegistry extends InvocableRegistry {}
