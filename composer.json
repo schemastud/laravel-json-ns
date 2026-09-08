@@ -55,7 +55,7 @@
                 "schemastud/php-json-ns",
                 "rushing/php-popcorn"
             ],
-            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped \u2014 the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 \u00a78)."
+            "because": "The Laravel binding is the tier where the popcorn coupling rides: it wires the framework-free @namespace grammar (schemastud/php-json-ns) into the popcorn InvocableRegistry (rushing/php-popcorn) as a URI-keyed dispatch socket. Neither dependency may be dropped \u2014 the grammar has no dispatch, the registry has no namespace resolution; this package is exactly their join (asset 06 §8)."
         },
         "merge-plugin": {
             "include": [
@@ -77,6 +77,41 @@
         "test": "@php vendor/bin/pest"
     },
     "repositories": [
+        {
+            "type": "path",
+            "url": "../../rushing/laravel-pipeline-registry",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../../rushing/laravel-popcorn",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../../rushing/php-popcorn",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../../schemastud/laravel-data-schemas",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../../schemastud/php-json-ns",
+            "options": {
+                "symlink": true
+            }
+        },
         {
             "type": "git",
             "url": "https://github.com/stephenr85/php-popcorn.git"
