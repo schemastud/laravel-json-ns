@@ -5,8 +5,8 @@ namespace Schemastud\JsonNs\Laravel;
 use Rushing\Popcorn\Contracts\Invocable;
 use Rushing\Popcorn\InvocableRegistry;
 use Rushing\Popcorn\Registries\IsRegistry;
-use Rushing\Popcorn\Registries\OnDuplicate;
-use Rushing\Popcorn\Registries\Optionality;
+use Rushing\Popcorn\Registries\OnKeyDuplicate;
+use Rushing\Popcorn\Registries\PopulationRequirement;
 use Schemastud\JsonNs\NamespaceUriKey;
 
 /**
@@ -36,8 +36,8 @@ use Schemastud\JsonNs\NamespaceUriKey;
 #[IsRegistry(
     root: 'jsonns.namespaces',
     entryType: Invocable::class,
-    onDuplicate: OnDuplicate::Supersede,
-    optionality: Optionality::Optional,
+    onKeyDuplicate: OnKeyDuplicate::Supersede,
+    populationRequirement: PopulationRequirement::Optional,
     description: 'namespace handlers, keyed by namespace URI rather than by a dotted key. Rebinding a URI replaces the prior handler — the documented last-registered-wins of the dispatch socket (asset 06 §7), not an accident. Entries carry a foreign RegistryKey, so they are addressable only through this registry, never through the global keyspace.',
 )]
 class NamespaceRegistry extends InvocableRegistry {}
