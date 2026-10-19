@@ -31,6 +31,7 @@
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^10.0|^11.0",
         "pestphp/pest": "^4.0",
+        "rushing/php-package-topology": "dev-main",
         "schemastud/laravel-data-schemas": "*",
         "wikimedia/composer-merge-plugin": "^2.1"
     },
@@ -111,6 +112,14 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/stephenr85/php-graphine.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/stephenr85/php-package-topology.git"
         },
         {
             "type": "git",
