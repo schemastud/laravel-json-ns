@@ -18,5 +18,12 @@ The socket, one file each under `src/`:
 - `JsonNsServiceProvider` — the wiring.
 
 The grammar itself (maps, scopes, overlays, CURIEs) lives in the framework-free
-[`schemastud/php-json-ns`](../php-json-ns/); this package only owns the Laravel dispatch seam.
+[`schemastud/php-json-ns`](https://github.com/schemastud/php-json-ns); this package only owns the Laravel dispatch seam.
 Start with [`AGENTS.md`](AGENTS.md). Tests: `composer test`.
+
+## Registries
+
+This package declares one registry:
+
+- [`jsonns.namespaces`](docs/registries/jsonns.namespaces.mdx): the handler bound to each namespace
+  URI. `NamespaceRegistry` is a popcorn `InvocableRegistry`, so each handler is an invocable.
