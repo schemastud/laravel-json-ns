@@ -1,0 +1,92 @@
+---
+title: Namespace handlers
+segment: jsonns.namespaces
+nav_order: 100
+excerpt: Which handler answers for each namespace URI that appears in a JSON document.
+---
+
+# Namespace handlers
+
+A JSON document can mark a node as belonging to a **namespace**: a URI such as
+`https://app.example.com/ns/grounding` that says "this node means something to whoever owns this
+namespace". `jsonns.namespaces` maps namespace URIs to the **handlers** that act on those nodes.
+When a document is processed, each namespaced node is dispatched to the handler bound to its URI.
+A node nobody has a handler for is left as it is.
+
+The grammar itself (namespace URIs, scopes, maps) lives in the framework-free
+[`schemastud/php-json-ns`](https://github.com/schemastud/php-json-ns). This package owns the Laravel
+side: the registry and the dispatcher that reads it.
+
+{/* registry-facts:start — generated from the #[IsRegistry] declaration by `splicewire:beam:docs:registries:scaffold`. Rerun the command; do not edit between these markers. */}
+
+- **Root:** `jsonns.namespaces`
+- **Entries:** `Rushing\Popcorn\Contracts\Invocable`
+- **Duplicate keys:** Supersede — a later registration under a taken key replaces the earlier entry, in its place
+- **Population:** Optional — an empty registry is normal
+- **Order:** `100` (display order, ascending)
+- **Declared by:** `Schemastud\JsonNs\Laravel\NamespaceRegistry`
+
+{/* registry-facts:end */}
+
+## Binding a handler
+
+Bind through the `NamespaceDispatcher` from a provider. A handler is any callable that takes the
+node's envelope as an array and returns an array:
+
+```php
+use Schemastud\JsonNs\Laravel\NamespaceDispatcher;
+
+public function boot(): void
+{
+    $this->app->make(NamespaceDispatcher::class)->bind(
+        'https://app.example.com/ns/grounding',
+        function (array $input): array {
+            // $input is ['value' => …, 'pointer' => …, 'namespace' => …, 'context' => […]]
+            return ['grounding' => $this->app->make(Grounder::class)->ground($input['value'])];
+        },
+    );
+}
+```
+
+The envelope carries the node's `value`, its JSON `pointer` in the document, its `namespace` URI and
+whatever `context` the caller passed. `bind()` wraps the callable in a `NamespaceHandler`; to
+register a handler class of your own, pass any popcorn `Invocable` to `register()`.
+
+## Keys are URIs
+
+Entries are keyed by the namespace URI itself, not by a dotted key. That is the point of the
+package: the URI *is* the identity. It also means entries are reached only through this registry
+and the dispatcher. A URI's `:` and `/` are not legal in the family's dotted keys, so nothing under
+`jsonns.namespaces` is addressable from the global registry tree.
+
+## Which handler answers
+
+The dispatcher picks one handler per node:
+
+1. a handler bound to the exact URI;
+2. otherwise, if the URI is **pinned** to a version (`…/grounding/3`), a handler bound to its
+   version-free **stem** (`…/grounding`);
+3. otherwise none, and the node's value is returned unchanged.
+
+So a handler on the stem answers for every version, and a handler on `…/grounding/3` answers only
+for version 3, and wins over the stem there.
+
+## Rebinding
+
+The duplicate policy is **supersede**: binding a URI that already has a handler replaces it. The
+last registration wins, which is how an application overrides a handler a package bound.
+
+## Related registries
+
+- [`jsonref.dereferencers`](https://github.com/schemastud/laravel-json-reference/blob/main/docs/registries/jsonref.dereferencers.mdx)
+  — the companion dispatch-by-key registry for following references.
+- [The schemas cluster](https://github.com/schemastud/laravel-data-schemas/blob/main/docs/registries/schemas.mdx)
+  — the schema substrate this sits beside.
+
+## Going deeper
+
+[Popcorn registries](/beam/docs/foundations/registries) explains roots, keys and duplicate policies
+in general. The registry's source is
+[`NamespaceRegistry`](https://github.com/schemastud/laravel-json-ns/blob/main/src/NamespaceRegistry.php),
+and the resolution rules are in
+[`NamespaceDispatcher`](https://github.com/schemastud/laravel-json-ns/blob/main/src/NamespaceDispatcher.php).
