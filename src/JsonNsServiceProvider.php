@@ -2,6 +2,7 @@
 
 namespace Schemastud\JsonNs\Laravel;
 
+use Rushing\Popcorn\Registries\ScopesRegistrant;
 use Schemastud\DataSchemas\Contracts\EnumeratesVersions;
 use Schemastud\DataSchemas\Contracts\SchemaRegistry;
 use Schemastud\JsonNs\NamespaceUri;
@@ -25,6 +26,14 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
  */
 class JsonNsServiceProvider extends PackageServiceProvider
 {
+    use ScopesRegistrant;
+
+    /** Every registry write in register()/boot() that names no `$by` records this package. */
+    protected function registrant(): string
+    {
+        return 'schemastud/laravel-json-ns';
+    }
+
     public function configurePackage(Package $package): void
     {
         $package->name('laravel-json-ns');
